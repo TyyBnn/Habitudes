@@ -26,7 +26,7 @@
     --ring:#3a3f33; --card:#191c15; --shadow:0 1px 3px rgba(0,0,0,.4);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  html,body{margin:0}
+  html,body{margin:0; overscroll-behavior:none}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
     background:var(--paper); color:var(--ink);
@@ -99,6 +99,15 @@
   .ymonth h4{margin:0 0 6px; font-size:11px; color:var(--muted); font-weight:600; text-transform:capitalize; text-align:center}
   .ygrid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px}
   .ycell{aspect-ratio:1; border-radius:2px; background:var(--line)}
+  /* Vue Année : un bloc par habitude */
+  .yhabit{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 12px 6px; margin-bottom:10px; box-shadow:var(--shadow)}
+  .yhabit-top{display:flex; align-items:center; gap:7px; margin-bottom:10px; font-weight:600; font-size:14px}
+  .yhabit-top .t{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .yhabit-pct{color:var(--muted); font-size:12.5px; font-variant-numeric:tabular-nums}
+  /* Liste des habitudes dans les réglages */
+  .set-habit{display:flex; align-items:center; gap:10px; padding:11px 12px; border:1px solid var(--line); border-radius:11px; margin-bottom:7px; cursor:pointer; background:var(--paper)}
+  .sh-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; font-size:15px}
+  .sh-arr{color:var(--muted); font-size:18px}
 
   /* ---- Vue Stats ---- */
   .stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 15px;
@@ -198,7 +207,6 @@
 <div class="today-row" id="todayRow"><button class="today-btn" onclick="goToday()">Aujourd'hui</button></div>
 
 <div id="content"></div>
-<button class="fab" onclick="openHabit()">+</button>
 
 <!-- Feuille : ajouter / modifier -->
 <div class="backdrop" id="backHabit" onclick="closeSheet('Habit')"></div>
@@ -206,7 +214,8 @@
   <h2 id="habitTitle">Nouvelle habitude</h2>
   <div class="fld"><label>Nom</label>
     <input type="text" id="fName" placeholder="ex. Sport, Lecture, Pas de sucre…" autocomplete="off"></div>
-  <div class="fld"><label>Icône</label><div class="icons" id="fIcons"></div></div>
+  <div class="fld"><label>Icône (emoji ou lettre — via ton clavier)</label>
+    <input type="text" id="fEmoji" placeholder="ex. 💪" maxlength="8" autocomplete="off"></div>
   <div class="fld"><label>Couleur</label><div class="swatches" id="fColors"></div></div>
   <div class="fld"><label>Type</label>
     <div class="segmented">
@@ -245,6 +254,8 @@
 <div class="backdrop" id="backSet" onclick="closeSheet('Set')"></div>
 <div class="sheet" id="sheetSet">
   <h2>Réglages</h2>
+  <button class="btn" onclick="closeSheet('Set'); openHabit()">➕ Ajouter une habitude</button>
+  <div id="setHabits" style="margin:12px 0 6px"></div>
   <div class="fld"><label>Thème</label>
     <div class="segmented">
       <div class="seg" data-theme="auto"  onclick="setTheme('auto')">Auto</div>
@@ -258,7 +269,7 @@
   </div>
   <input type="file" id="importFile" accept="application/json" class="hide" onchange="importData(event)">
   <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--muted)">
-    <input type="checkbox" id="showArchived" onchange="render()"> Afficher les habitudes archivées
+    <input type="checkbox" id="showArchived" onchange="render(); renderSetHabits()"> Afficher les habitudes archivées
   </label>
   <p class="hint" id="userLine"></p>
   <button class="btn ghost" onclick="signOut()">Se déconnecter</button>
@@ -480,7 +491,7 @@ function render(){
 
   const c=document.getElementById('content'); c.innerHTML='';
   if(visibleHabits().length===0){
-    c.innerHTML='<div class="empty-state">Aucune habitude.<br>Appuie sur + pour commencer.</div>'; return;
+    c.innerHTML='<div class="empty-state">Aucune habitude.<br>Ajoute-en une depuis les réglages ⚙︎.</div>'; return;
   }
   if(view==='week')  renderWeek(c);
   if(view==='month') renderMonth(c);
@@ -506,7 +517,7 @@ function renderWeek(c){
     }
     const el=document.createElement('div'); el.className='wk';
     el.innerHTML=`<div class="wk-head"><span class="wk-emoji">${h.emoji||'•'}</span>
-        <span class="wk-name" onclick="openHabit('${h.id}')">${esc(h.name)}</span>
+        <span class="wk-name">${esc(h.name)}</span>
         <span class="wk-prog">${weekProgress(h,start)}</span></div><div class="wk-days">${daysHtml}</div>`;
     el.querySelectorAll('.wk-c:not(.off):not(.future)').forEach(cell=>{
       cell.onclick=()=>{ const kk=cell.dataset.k, cur=getCount(h.id,kk); setCount(h.id,kk,cur>0?0:1); render(); };
@@ -541,7 +552,7 @@ function renderMonth(c){
       cells+=`<div class="${cls}" style="${st}" data-d="${dd}">${dd}</div>`;
     }
     const row=document.createElement('div'); row.className='mrow';
-    row.innerHTML=`<div class="mrow-top"><div class="mrow-name" onclick="openHabit('${h.id}')">
+    row.innerHTML=`<div class="mrow-top"><div class="mrow-name">
         <span class="dot" style="background:${h.color}"></span><span>${h.emoji||''}</span><span class="t">${esc(h.name)}</span></div>
         <div class="mrow-pct">${rate}%</div></div><div class="grid">${cells}</div>`;
     row.querySelectorAll('.cell:not(.empty):not(.off):not(.future)').forEach(cell=>{
@@ -552,33 +563,30 @@ function renderMonth(c){
   });
 }
 function renderYear(c){
-  const sel=document.createElement('div'); sel.className='selrow';
-  let opts='<option value="all">Toutes les habitudes</option>';
-  visibleHabits().forEach(h=>opts+=`<option value="${h.id}" ${yearHabitId===h.id?'selected':''}>${h.emoji||''} ${esc(h.name)}</option>`);
-  sel.innerHTML=`<select class="sel" id="yearSel">${opts}</select>`; c.appendChild(sel);
-  document.getElementById('yearSel').onchange=(e)=>{ yearHabitId=e.target.value; render(); };
-  const y=cursor.getFullYear(); const wrap=document.createElement('div'); wrap.className='year';
-  for(let m=0;m<12;m++){
-    const offset=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate();
-    let cells='';
-    for(let i=0;i<offset;i++) cells+='<div class="ycell" style="background:transparent"></div>';
-    for(let dd=1; dd<=days; dd++){
-      const date=new Date(y,m,dd); const {ratio,color}=dayIntensity(date);
-      const bg=ratio>0?hexA(color,0.2+0.8*ratio):'var(--line)';
-      cells+=`<div class="ycell" style="background:${bg}" title="${key(date)}"></div>`;
+  const y=cursor.getFullYear();
+  visibleHabits().forEach(h=>{
+    const rate=completionRate(h, new Date(y,0,1), new Date(y,11,31));
+    let months='';
+    for(let m=0;m<12;m++){
+      const offset=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate();
+      let cells='';
+      for(let i=0;i<offset;i++) cells+='<div class="ycell" style="background:transparent"></div>';
+      for(let dd=1; dd<=days; dd++){
+        const date=new Date(y,m,dd); let bg='var(--line)';
+        if(!isFuture(date)){
+          if(h.kind==='negative'){ if(dueOn(h,date) && getCount(h.id,key(date))>0) bg=hexA(h.color,.55); } // écarts
+          else if(daySuccess(h,date)) bg=h.color;                                                          // réussites
+        }
+        cells+=`<div class="ycell" style="background:${bg}" title="${key(date)}"></div>`;
+      }
+      months+=`<div class="ymonth"><h4>${MONTHS[m].slice(0,3)}</h4><div class="ygrid">${cells}</div></div>`;
     }
-    const mb=document.createElement('div'); mb.className='ymonth';
-    mb.innerHTML=`<h4>${MONTHS[m].slice(0,3)}</h4><div class="ygrid">${cells}</div>`; wrap.appendChild(mb);
-  }
-  c.appendChild(wrap);
-  const tip=document.createElement('p'); tip.className='hint'; tip.textContent='Plus une case est foncée, plus la journée a été réussie.'; c.appendChild(tip);
-}
-function dayIntensity(date){
-  if(isFuture(date)) return {ratio:0,color:'#000'};
-  let list = yearHabitId==='all' ? visibleHabits() : visibleHabits().filter(h=>h.id===yearHabitId);
-  let due=0, ok=0, color='#2f6b4f';
-  list.forEach(h=>{ if(dueOn(h,date)){ due++; if(daySuccess(h,date)){ ok++; if(yearHabitId!=='all') color=h.color; } } });
-  return {ratio: due? ok/due : 0, color};
+    const block=document.createElement('div'); block.className='yhabit';
+    block.innerHTML=`<div class="yhabit-top"><span class="dot" style="background:${h.color}"></span>
+        <span class="t">${h.emoji||''} ${esc(h.name)}</span><span class="yhabit-pct">${rate}%</span></div>
+      <div class="year">${months}</div>`;
+    c.appendChild(block);
+  });
 }
 function renderStats(c){
   visibleHabits().forEach(h=>{
@@ -587,7 +595,7 @@ function renderStats(c){
     const cur=currentStreak(h), rec=recordStreak(h), tot=totalDone(h);
     const totLabel=h.kind==='negative'?'écarts':'jours';
     const el=document.createElement('div'); el.className='stat';
-    el.innerHTML=`<div class="stat-top" onclick="openHabit('${h.id}')"><span class="dot" style="background:${h.color}"></span>
+    el.innerHTML=`<div class="stat-top"><span class="dot" style="background:${h.color}"></span>
         <span>${h.emoji||''} ${esc(h.name)}</span></div>
       <div class="stat-grid">
         <div class="kpi"><div class="n">${monthRate}%</div><div class="l">ce mois</div></div>
@@ -614,10 +622,7 @@ function shift(n){
 }
 function goToday(){ cursor=new Date(); render(); }
 
-let form={ emoji:ICONS[0], color:COLORS[0], kind:'positive', freq:'daily', days:[1,3,5] };
-function buildIcons(){ const w=document.getElementById('fIcons'); w.innerHTML='';
-  ICONS.forEach(e=>{ const b=document.createElement('div'); b.className='icn'+(e===form.emoji?' sel':'');
-    b.textContent=e; b.onclick=()=>{ form.emoji=e; buildIcons(); }; w.appendChild(b); }); }
+let form={ color:COLORS[0], kind:'positive', freq:'daily', days:[1,3,5] };
 function buildColors(){ const w=document.getElementById('fColors'); w.innerHTML='';
   COLORS.forEach(col=>{ const s=document.createElement('div'); s.className='sw'+(col===form.color?' sel':'');
     s.style.background=col; s.onclick=()=>{ form.color=col; buildColors(); }; w.appendChild(s); }); }
@@ -638,15 +643,16 @@ function openHabit(id){
   const h=id?data.habits.find(x=>x.id===id):null;
   document.getElementById('habitTitle').textContent=id?'Modifier':'Nouvelle habitude';
   document.getElementById('editExtra').classList.toggle('hide',!id);
-  form={ emoji:h?h.emoji:ICONS[0], color:h?h.color:COLORS[data.habits.length%COLORS.length],
+  form={ color:h?h.color:COLORS[data.habits.length%COLORS.length],
     kind:h?h.kind:'positive', freq:h?h.freq_mode:'daily', days:h?(h.freq_days||[1,3,5]):[1,3,5] };
   document.getElementById('fName').value=h?h.name:'';
+  document.getElementById('fEmoji').value=h?(h.emoji||''):'';
   document.getElementById('fTarget').value=h?(h.freq_target||4):4;
   document.getElementById('fN').value=h?(h.freq_n||2):2;
   document.getElementById('fStart').value=h?h.start_date:key(new Date());
   document.getElementById('fEnd').value=h&&h.end_date?h.end_date:'';
   if(id) document.getElementById('archBtn').textContent = h.archived?'Désarchiver':'Archiver';
-  buildIcons(); buildColors(); buildWDays(); pickKind(form.kind); pickFreq(form.freq);
+  buildColors(); buildWDays(); pickKind(form.kind); pickFreq(form.freq);
   openSheet('Habit');
   if(!id) setTimeout(()=>document.getElementById('fName').focus(),300);
 }
@@ -655,7 +661,7 @@ async function saveHabit(){
   const name=document.getElementById('fName').value.trim();
   if(!name){ document.getElementById('fName').focus(); return; }
   const rec={
-    name, emoji:form.emoji, color:form.color, kind:form.kind, freq_mode:form.freq,
+    name, emoji:document.getElementById('fEmoji').value.trim(), color:form.color, kind:form.kind, freq_mode:form.freq,
     freq_target: Math.max(1,parseInt(document.getElementById('fTarget').value)||1),
     freq_days: form.days.slice().sort(),
     freq_n: Math.max(1,parseInt(document.getElementById('fN').value)||1),
@@ -744,7 +750,18 @@ async function importToSupabase(d){
 function openSettings(){
   document.querySelectorAll('#sheetSet [data-theme]').forEach(s=>s.classList.toggle('sel',s.dataset.theme===(data.theme||'auto')));
   document.getElementById('userLine').textContent = session? ('Connecté : '+session.user.email) : '';
+  renderSetHabits();
   openSheet('Set');
+}
+// 6.2 Liste des habitudes gérables depuis les réglages (tap = modifier)
+function renderSetHabits(){
+  const w=document.getElementById('setHabits'); if(!w) return; w.innerHTML='';
+  const list=visibleHabits();
+  if(!list.length){ w.innerHTML='<p class="hint" style="margin:4px 0">Aucune habitude pour l\'instant.</p>'; return; }
+  list.forEach(h=>{ const it=document.createElement('div'); it.className='set-habit';
+    it.innerHTML=`<span class="wk-emoji">${h.emoji||'•'}</span><span class="sh-name">${esc(h.name)}${h.archived?' · (archivée)':''}</span><span class="sh-arr">›</span>`;
+    it.onclick=()=>{ closeSheet('Set'); openHabit(h.id); };
+    w.appendChild(it); });
 }
 
 /* ============================================================
@@ -790,6 +807,17 @@ document.addEventListener('focusin', e=>{
   if(e.target.matches('input,textarea,select'))
     setTimeout(()=>e.target.scrollIntoView({block:'center',behavior:'smooth'}), 300);
 });
+// 8.1 Swipe horizontal → naviguer entre périodes (semaine ↔ mois ↔ année)
+function anySheetOpen(){ return document.getElementById('backHabit').classList.contains('on')
+  || document.getElementById('backSet').classList.contains('on'); }
+let swX=0, swY=0, swT=0;
+document.addEventListener('touchstart', e=>{ if(e.touches.length===1){ swX=e.touches[0].clientX; swY=e.touches[0].clientY; swT=Date.now(); } }, {passive:true});
+document.addEventListener('touchend', e=>{
+  if(anySheetOpen()) return;
+  if(!(view==='week'||view==='month'||view==='year')) return;
+  const dx=e.changedTouches[0].clientX-swX, dy=e.changedTouches[0].clientY-swY;
+  if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.7 && (Date.now()-swT)<700) shift(dx<0?1:-1);
+}, {passive:true});
 
 // 8.1 Après connexion réussie : charger les données puis afficher
 async function afterLogin(){ hideAuth(); await loadAll(); render(); }
