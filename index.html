@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Habitudes">
 <meta name="theme-color" content="#17201c">
+<!-- Icône d'écran d'accueil (iOS) + favicon — icon.png doit être dans le même dossier que index.html -->
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <title>Suivi d'habitudes</title>
 <style>
   /* =====================================================
@@ -29,7 +32,10 @@
     background:var(--paper); color:var(--ink);
     padding:calc(var(--safe-top) + 14px) 16px calc(var(--safe-bot) + 92px);
     max-width:660px; margin:0 auto; line-height:1.4; -webkit-font-smoothing:antialiased;
+    overflow-x:hidden; touch-action:manipulation;
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
   }
+  input,textarea,select{ -webkit-user-select:text; user-select:text; }
   header{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px}
   .brand{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600}
   .gear{background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; padding:4px}
@@ -43,7 +49,7 @@
 
   .nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
   .nav button{background:var(--card); border:1px solid var(--line); color:var(--ink);
-    width:38px; height:38px; border-radius:10px; font-size:17px; cursor:pointer}
+    width:42px; height:42px; border-radius:10px; font-size:17px; cursor:pointer}
   .nav .label{font-weight:600; font-size:15px; text-transform:capitalize}
   .today-row{text-align:center; margin:0 0 14px}
   .today-btn{border:none; background:none; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; padding:2px 6px}
@@ -59,8 +65,8 @@
   .wk-day{display:flex; flex-direction:column; align-items:center; gap:4px}
   .wk-lab{font-size:10px; color:var(--muted); font-weight:600; text-align:center; line-height:1.15}
   .wk-lab .num{display:block; font-size:11px; color:var(--muted); font-weight:400}
-  .wk-c{width:34px; height:34px; border-radius:50%; border:2px solid var(--ring); display:grid;
-    place-items:center; cursor:pointer; font-size:15px; background:transparent; transition:all .12s}
+  .wk-c{width:100%; max-width:42px; aspect-ratio:1; margin:0 auto; border-radius:50%; border:2px solid var(--ring);
+    display:grid; place-items:center; cursor:pointer; font-size:15px; background:transparent; transition:all .12s}
   .wk-c.done{border-color:transparent; color:#fff}
   .wk-c.off{border-style:dashed; opacity:.4; cursor:default}
   .wk-c.future{opacity:.3; cursor:default}
@@ -779,6 +785,11 @@ let flashTimer=null;
 function flash(msg){ const f=document.getElementById('flash'); f.textContent=msg; f.classList.add('on');
   clearTimeout(flashTimer); flashTimer=setTimeout(()=>f.classList.remove('on'),2600); }
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+// 8.0 Confort clavier : garder le champ visible quand le clavier iOS s'ouvre
+document.addEventListener('focusin', e=>{
+  if(e.target.matches('input,textarea,select'))
+    setTimeout(()=>e.target.scrollIntoView({block:'center',behavior:'smooth'}), 300);
+});
 
 // 8.1 Après connexion réussie : charger les données puis afficher
 async function afterLogin(){ hideAuth(); await loadAll(); render(); }
