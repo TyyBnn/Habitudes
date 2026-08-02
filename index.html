@@ -167,6 +167,53 @@
   .hint{font-size:12px; color:var(--muted); line-height:1.5; margin-top:12px}
   .hide{display:none!important}
 
+  /* ===== Bascule Habitudes / Sport ===== */
+  .apptabs{display:flex; gap:6px; background:var(--line); padding:4px; border-radius:12px; margin-bottom:14px}
+  .apptab{flex:1; text-align:center; padding:10px 0; border-radius:9px; font-size:15px; font-weight:700; color:var(--muted); cursor:pointer; border:none; background:none}
+  .apptab.on{background:var(--card); color:var(--ink); box-shadow:var(--shadow)}
+
+  /* ===== Partie Sport ===== */
+  .tpl{display:flex; align-items:center; gap:13px; background:var(--card); border:1px solid var(--line); border-radius:15px; padding:15px; margin-bottom:10px; box-shadow:var(--shadow)}
+  .tpl-em{font-size:26px; cursor:pointer}
+  .tpl-b{flex:1; min-width:0; cursor:pointer}
+  .tpl-n{font-weight:700; font-size:16px}
+  .tpl-m{font-size:12.5px; color:var(--muted); margin-top:1px}
+  .tpl-del{background:none; border:none; font-size:16px; cursor:pointer; padding:6px; opacity:.6}
+  .tpl-arr{color:var(--muted); font-size:20px}
+  .rowbtn{display:flex; align-items:center; gap:10px; background:none; border:1px solid var(--line); border-radius:12px; padding:13px 14px; width:100%; color:var(--ink); font-size:15px; font-weight:600; cursor:pointer; margin-bottom:8px; text-align:left}
+  .rowbtn .a{margin-left:auto; color:var(--muted)}
+  .shead{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:14px}
+  .chrono{background:var(--card); border:1px solid var(--line); border-radius:11px; padding:8px 12px; text-align:center; box-shadow:var(--shadow)}
+  .chrono .t{font-size:18px; font-weight:700; font-variant-numeric:tabular-nums}
+  .chrono .l{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em}
+  .back{background:none; border:none; color:var(--accent); font-weight:700; font-size:15px; cursor:pointer; padding:0 0 12px}
+  .ex{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px; margin-bottom:11px; box-shadow:var(--shadow)}
+  .ex.done{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+  .ex-top{display:flex; align-items:center; gap:9px}
+  .ex-name{font-weight:700; font-size:15.5px; flex:1; min-width:0}
+  .tag{font-size:11px; font-weight:600; color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent); padding:3px 8px; border-radius:20px; white-space:nowrap}
+  .info{color:var(--muted); font-size:16px; cursor:pointer; padding:0 3px; border:none; background:none}
+  .presc{font-size:12.5px; color:var(--muted); margin:6px 0 12px}
+  .presc b{color:var(--ink); font-weight:600}
+  .spnotes{font-size:12.5px; color:var(--muted); background:var(--paper); border-radius:10px; padding:10px 12px; margin:0 0 12px; white-space:pre-line; line-height:1.5}
+  .entry{display:grid; grid-template-columns:1fr 1fr 46px; gap:9px; align-items:end}
+  .field label{display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-weight:600; margin-bottom:5px; text-align:center}
+  .field .ro{padding:12px 4px; border:1px dashed var(--line); border-radius:11px; text-align:center; font-size:15px; font-weight:600; color:var(--muted)}
+  .field input{width:100%; padding:12px 4px; border:1px solid var(--line); border-radius:11px; font-size:18px; text-align:center; background:var(--paper); color:var(--ink); font-variant-numeric:tabular-nums; font-weight:700}
+  .field input:focus{border-color:var(--accent); outline:none}
+  .src{font-size:10px; color:var(--muted); margin-top:4px; text-align:center}
+  .chk{width:46px; height:46px; border-radius:50%; border:2px solid var(--ring); display:grid; place-items:center; cursor:pointer; font-size:18px}
+  .chk.on{border-color:transparent; background:var(--accent); color:#fff}
+  .finish{width:100%; padding:15px; border:none; border-radius:13px; background:var(--accent); color:#fff; font-size:16px; font-weight:700; cursor:pointer; margin-top:6px}
+  .rest{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(var(--safe-bot) + 18px); width:calc(100% - 32px); max-width:608px; background:var(--ink); color:var(--paper); border-radius:14px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 6px 20px rgba(0,0,0,.25); cursor:pointer; z-index:25}
+  .rest .lbl{font-size:13px; opacity:.8}
+  .rest .cd{font-size:20px; font-weight:700; font-variant-numeric:tabular-nums}
+  .hist{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:9px; box-shadow:var(--shadow); cursor:pointer; display:flex; align-items:center; gap:10px}
+  .hist-b{flex:1}
+  .hist-n{font-weight:600; font-size:15px}
+  .hist-d{font-size:12.5px; color:var(--muted); text-transform:capitalize}
+  .sp-empty{text-align:center; color:var(--muted); padding:40px 20px; font-size:15px}
+
   /* ---- Écran de connexion ---- */
   .auth{position:fixed; inset:0; z-index:100; background:var(--paper); display:flex; align-items:center; justify-content:center; padding:24px}
   .auth-card{width:100%; max-width:360px; text-align:center}
@@ -185,6 +232,7 @@
 </style>
 <!-- 0.1 Librairie Supabase (chargée depuis jsDelivr) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <!-- ======================================================
@@ -194,6 +242,13 @@
   <span class="brand">Habitudes</span>
   <button class="gear" onclick="openSettings()">⚙︎</button>
 </header>
+
+<div class="apptabs">
+  <button class="apptab on" id="mHabits" onclick="setMode('habits')">🎯 Habitudes</button>
+  <button class="apptab"    id="mSport"  onclick="setMode('sport')">🏋️ Sport</button>
+</div>
+
+<div id="habitsApp">
 <h1 id="bigDate">—</h1>
 <p class="sub" id="bigSub"></p>
 
@@ -211,6 +266,10 @@
 <div class="today-row" id="todayRow"><button class="today-btn" onclick="goToday()">Aujourd'hui</button></div>
 
 <div id="content"></div>
+</div><!-- /habitsApp -->
+
+<div id="sportApp" class="hide"></div>
+<input type="file" id="xlsxFile" accept=".xlsx,.xls" class="hide" onchange="onXlsx(event)">
 
 <!-- Feuille : ajouter / modifier -->
 <div class="backdrop" id="backHabit" onclick="closeSheet('Habit')"></div>
@@ -785,13 +844,14 @@ let swX=0, swY=0, swT=0;
 document.addEventListener('touchstart', e=>{ if(e.touches.length===1){ swX=e.touches[0].clientX; swY=e.touches[0].clientY; swT=Date.now(); } }, {passive:true});
 document.addEventListener('touchend', e=>{
   if(anySheetOpen()) return;
+  if(appMode!=='habits') return;
   if(!(view==='month'||view==='year')) return;
   const dx=e.changedTouches[0].clientX-swX, dy=e.changedTouches[0].clientY-swY;
   if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.7 && (Date.now()-swT)<700) shift(dx<0?1:-1);
 }, {passive:true});
 
 // 8.1 Après connexion réussie : charger les données puis afficher
-async function afterLogin(){ hideAuth(); await loadAll(); render(); }
+async function afterLogin(){ hideAuth(); await loadAll(); render(); loadSport().then(()=>{ if(appMode==='sport') renderSport(); }); }
 
 // 8.2 Démarrage
 async function init(){
@@ -802,9 +862,203 @@ async function init(){
   sb.auth.onAuthStateChange((_e,s)=>{
     session=s;
     if(s){ afterLogin(); }
-    else { data.habits=[]; data.completions={}; cacheLocal(); render(); showAuth(); }
+    else { data.habits=[]; data.completions={}; sportTemplates=[]; sportHistory=[]; cacheLocal(); render(); showAuth(); }
   });
 }
+/* ============================================================
+   9. PARTIE SPORT
+   ============================================================ */
+// 9.0 État
+let appMode='habits';
+let sportTemplates=[], sportHistory=[];
+let sportScreen='templates', sportSession=null, sportDetail=null, sportNotesOpen={};
+let sportChronoT=null, sportRestT=null, sportRestLeft=90;
+
+// 9.1 Bascule Habitudes / Sport
+function setMode(m){
+  appMode=m;
+  document.getElementById('mHabits').classList.toggle('on', m==='habits');
+  document.getElementById('mSport').classList.toggle('on', m==='sport');
+  document.getElementById('habitsApp').classList.toggle('hide', m!=='habits');
+  document.getElementById('sportApp').classList.toggle('hide', m!=='sport');
+  const b=document.querySelector('.brand'); if(b) b.textContent = m==='sport'?'Sport':'Habitudes';
+  if(m==='sport'){ sportScreen='templates'; renderSport(); } else { clearInterval(sportChronoT); }
+}
+
+// 9.2 Chargement depuis Supabase
+async function loadSport(){
+  const res = await Promise.all([
+    sb.from('sport_templates').select('*').order('sort_order'),
+    sb.from('sport_template_exercises').select('*').order('sort_order'),
+    sb.from('sport_sessions').select('*').order('date',{ascending:false}),
+    sb.from('sport_session_exercises').select('*').order('sort_order')
+  ]);
+  if(res.some(r=>r.error)){ flash('Chargement Sport échoué'); return; }
+  const tpls=res[0].data||[], exs=res[1].data||[], sess=res[2].data||[], sexs=res[3].data||[];
+  const exByT={}; exs.forEach(e=>{ (exByT[e.template_id]=exByT[e.template_id]||[]).push(e); });
+  sportTemplates = tpls.map(t=>({ ...t, exercices: exByT[t.id]||[] }));
+  const sexBy={}; sexs.forEach(e=>{ (sexBy[e.session_id]=sexBy[e.session_id]||[]).push(e); });
+  sportHistory = sess.map(s=>({ id:s.id, date:s.date, templateName:s.template_name, emoji:s.emoji, duration:s.duration_sec, exercices:sexBy[s.id]||[] }));
+}
+
+// 9.3 Helpers
+function lastWeightSport(name){ for(const s of sportHistory){ const e=(s.exercices||[]).find(x=>x.name===name && x.poids); if(e) return e.poids; } return null; }
+function objLabelSport(e){ if(e.type==='timed') return (e.duree_sec||0)+' s'+(e.reps_note?(' '+e.reps_note):''); return (e.reps_objectif||'')+' reps'+(e.reps_note?(' '+e.reps_note):''); }
+
+// 9.4 Écran MODÈLES
+function viewSportTemplates(){
+  let cards = sportTemplates.map(t=>`
+    <div class="tpl">
+      <span class="tpl-em" onclick="startSportSession('${t.id}')">${t.emoji||'🏋️'}</span>
+      <div class="tpl-b" onclick="startSportSession('${t.id}')"><div class="tpl-n">${t.jour?esc(t.jour)+' — ':''}${esc(t.name)}</div><div class="tpl-m">${t.exercices.length} exercices</div></div>
+      <button class="tpl-del" onclick="deleteTemplate('${t.id}','${esc(t.name)}')">🗑</button>
+    </div>`).join('');
+  if(!sportTemplates.length) cards='<div class="sp-empty">Aucun modèle.<br>Importe ton programme Excel ci-dessous.</div>';
+  return `<h1>Mes séances</h1><p class="sub">choisis la séance du jour</p>${cards}
+    <button class="rowbtn" onclick="sportScreen='history';renderSport()">🕘 Séances passées <span class="a">${sportHistory.length} ›</span></button>
+    <button class="rowbtn" onclick="document.getElementById('xlsxFile').click()">⬆️ Importer un programme (Excel)</button>`;
+}
+
+// 9.5 Démarrer une séance (pré-remplissage : dernière fois > poids défaut > vide)
+function startSportSession(id){
+  const t=sportTemplates.find(x=>x.id===id); if(!t) return;
+  sportSession={ templateName:t.name, emoji:t.emoji, start:Date.now(),
+    exercices: t.exercices.map(e=>{
+      const lw=lastWeightSport(e.name);
+      const pre = lw!=null ? lw : (e.poids_defaut!=null ? String(e.poids_defaut) : '');
+      const src = lw!=null ? 'dernière fois' : (e.poids_defaut!=null ? 'défaut' : '');
+      return { name:e.name, emoji:e.emoji, tag:(e.muscles||'').split('(')[0].trim(), muscles:e.muscles,
+        sets:e.sets, obj:objLabelSport(e), type:e.type, rest:e.rest_sec||90, notes:e.notes, charge:e.charge_depart,
+        poids:pre, poids0:pre, src:src, done:false };
+    }) };
+  sportScreen='session'; sportNotesOpen={};
+  clearInterval(sportChronoT); sportChronoT=setInterval(tickSportChrono,1000);
+  renderSport();
+}
+function viewSportSession(){
+  const s=sportSession;
+  const cards=s.exercices.map((e,i)=>{
+    const lw=lastWeightSport(e.name);
+    return `<div class="ex ${e.done?'done':''}">
+      <div class="ex-top"><span class="ex-name">${e.emoji||''} ${esc(e.name)}</span>${e.tag?`<span class="tag">${esc(e.tag)}</span>`:''}
+        <button class="info" onclick="sportNotesOpen[${i}]=!sportNotesOpen[${i}];renderSport()">ⓘ</button></div>
+      <div class="presc"><b>${e.sets} séries</b> · objectif <b>${esc(e.obj)}</b> · repos ${e.rest}s${lw?` · <b>dernière fois : ${esc(lw)} kg</b>`:''}</div>
+      ${sportNotesOpen[i]?`<div class="spnotes">Muscles : ${esc(e.muscles||'')}${e.charge?('\nCharge départ : '+esc(e.charge)):''}${e.notes?('\n'+esc(e.notes)):''}</div>`:''}
+      <div class="entry">
+        <div class="field"><label>Séries</label><div class="ro">${e.sets||'—'}</div></div>
+        <div class="field"><label>Poids (kg)</label><input inputmode="decimal" value="${esc(String(e.poids))}" placeholder="—" oninput="sportSession.exercices[${i}].poids=this.value">${e.src?`<div class="src">${e.src}</div>`:''}</div>
+        <div class="chk ${e.done?'on':''}" onclick="toggleSportDone(${i})">${e.done?'✓':''}</div>
+      </div></div>`;
+  }).join('');
+  const doneN=s.exercices.filter(e=>e.done).length;
+  return `<button class="back" onclick="quitSportSession()">‹ Annuler la séance</button>
+    <div class="shead"><div><h1>${s.emoji||''} ${esc(s.templateName)}</h1><div class="sub">${doneN}/${s.exercices.length} exercices faits</div></div>
+      <div class="chrono"><div class="t" id="sportChrono">00:00</div><div class="l">durée</div></div></div>
+    ${cards}<button class="finish" onclick="finishSportSession()">Terminer la séance</button>
+    <div class="rest" onclick="toggleSportRest()"><span class="lbl">Repos</span><span class="cd" id="sportRest">1:30</span><span class="lbl" id="sportRa">appuyer pour lancer</span></div>`;
+}
+function toggleSportDone(i){ sportSession.exercices[i].done=!sportSession.exercices[i].done; renderSport(); }
+function quitSportSession(){
+  const s=sportSession; const touched = s && s.exercices.some(e=>e.done || e.poids!==e.poids0);
+  if(touched && !confirm('Quitter sans enregistrer cette séance ?')) return;
+  clearInterval(sportChronoT); sportSession=null; sportScreen='templates'; renderSport();
+}
+async function finishSportSession(){
+  const s=sportSession; const dur=Math.round((Date.now()-s.start)/1000);
+  const {data:row,error}=await sb.from('sport_sessions').insert({user_id:session.user.id, template_name:s.templateName, emoji:s.emoji, duration_sec:dur}).select().single();
+  if(error){ flash('Enregistrement échoué'); return; }
+  const rows=s.exercices.map((e,i)=>({ session_id:row.id, user_id:session.user.id, name:e.name, tag:e.tag, sets:e.sets, obj:e.obj, poids:String(e.poids||''), done:e.done, sort_order:i }));
+  if(rows.length){ const {error:e2}=await sb.from('sport_session_exercises').insert(rows); if(e2) flash('Détail non enregistré'); }
+  clearInterval(sportChronoT); sportSession=null; sportScreen='templates';
+  await loadSport(); renderSport();
+}
+function tickSportChrono(){ if(!sportSession) return; const el=document.getElementById('sportChrono'); if(!el) return;
+  const s=Math.round((Date.now()-sportSession.start)/1000); el.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+// 9.6 Historique
+function viewSportHistory(){
+  if(!sportHistory.length) return `<button class="back" onclick="sportScreen='templates';renderSport()">‹ Retour</button><div class="sp-empty">Aucune séance enregistrée.<br>Termine une séance pour la voir ici.</div>`;
+  const items=sportHistory.map(h=>{ const d=new Date(h.date); const doneN=(h.exercices||[]).filter(e=>e.done).length;
+    return `<div class="hist" onclick="sportDetail='${h.id}';sportScreen='detail';renderSport()"><span style="font-size:22px">${h.emoji||'🏋️'}</span>
+      <div class="hist-b"><div class="hist-n">${esc(h.templateName||'Séance')}</div>
+        <div class="hist-d">${d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})} · ${doneN}/${(h.exercices||[]).length} faits · ${Math.round((h.duration||0)/60)} min</div></div>
+      <span class="tpl-arr">›</span></div>`; }).join('');
+  return `<button class="back" onclick="sportScreen='templates';renderSport()">‹ Retour</button><h1>Séances passées</h1><p class="sub">${sportHistory.length} séance(s)</p>${items}`;
+}
+function viewSportDetail(){
+  const h=sportHistory.find(x=>x.id===sportDetail); if(!h) return '';
+  const rows=(h.exercices||[]).map(e=>`<div class="ex"><div class="ex-top"><span class="ex-name">${esc(e.name)}</span>${e.done?'<span class="tag">fait</span>':''}</div>
+    <div class="presc"><b>${e.sets||'—'} séries</b> · objectif ${esc(e.obj||'')} · <b>${e.poids?esc(e.poids)+' kg':'—'}</b></div></div>`).join('');
+  const d=new Date(h.date);
+  return `<button class="back" onclick="sportScreen='history';renderSport()">‹ Historique</button><h1>${h.emoji||''} ${esc(h.templateName||'')}</h1>
+    <p class="sub">${d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</p>${rows}`;
+}
+
+// 9.7 Supprimer un modèle (l'historique reste intact)
+async function deleteTemplate(id,name){
+  if(!confirm('Supprimer le modèle « '+name+' » ? Tes séances passées restent.')) return;
+  const {error}=await sb.from('sport_templates').delete().eq('id',id);
+  if(error){ flash('Suppression échouée'); return; }
+  await loadSport(); renderSport();
+}
+
+// 9.8 Import Excel (mode Remplacer)
+async function onXlsx(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  try{
+    const buf=await f.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    const num=v=>{ const n=parseInt(v); return isNaN(n)?null:n; };
+    const fl =v=>{ const n=parseFloat(String(v).replace(',','.')); return isNaN(n)?null:n; };
+    const S =v=>(v==null?'':String(v).trim());
+    const order=[], map={};
+    rows.forEach(r=>{
+      const name=S(r['Modèle']); if(!name) return;
+      if(!map[name]){ map[name]={name, jour:S(r['Jour']), emoji:S(r['Emoji modèle']), exercices:[]}; order.push(name); }
+      const exName=S(r['Exercice']); if(!exName) return;
+      map[name].exercices.push({
+        name:exName, emoji:S(r['Emoji exo']), muscles:S(r['Muscles']),
+        type:S(r['Type'])||'weight', sets:num(r['Séries']), reps_objectif:num(r['Objectif (reps)']),
+        duree_sec:num(r['Durée (s)']), reps_note:S(r['Reps note']), rest_sec:num(r['Repos (s)']),
+        charge_depart:S(r['Charge départ']), poids_defaut:fl(r['Poids défaut (kg)']), notes:S(r['Notes'])
+      });
+    });
+    const groups=order.map(n=>map[n]).filter(g=>g.exercices.length);
+    if(!groups.length){ alert('Aucune ligne exploitable. Vérifie la colonne « Modèle » et « Exercice ».'); return; }
+    if(!confirm('Importer '+groups.length+' modèle(s) en mode Remplacer ?\nTes modèles actuels seront remplacés. Ton historique est conservé.')) return;
+    // Remplacer : on vide les modèles (les exercices de modèle partent en cascade)
+    const {error:eDel}=await sb.from('sport_templates').delete().eq('user_id',session.user.id);
+    if(eDel){ flash('Import : échec suppression'); return; }
+    let ti=0;
+    for(const g of groups){
+      const {data:tpl,error}=await sb.from('sport_templates').insert({user_id:session.user.id, name:g.name, jour:g.jour, emoji:g.emoji, sort_order:ti++}).select().single();
+      if(error){ flash('Import échoué'); return; }
+      const exRows=g.exercices.map((e,i)=>({ template_id:tpl.id, user_id:session.user.id, ...e, sort_order:i }));
+      const {error:e2}=await sb.from('sport_template_exercises').insert(exRows);
+      if(e2){ flash('Import : exercices partiels'); }
+    }
+    await loadSport(); sportScreen='templates'; renderSport(); flash('Programme importé ✓');
+  }catch(err){ alert('Fichier illisible : '+(err.message||err)); }
+  finally{ ev.target.value=''; }
+}
+
+// 9.9 Minuteur de repos
+function toggleSportRest(){ if(sportRestT){ clearInterval(sportRestT); sportRestT=null; sportRestLeft=90; paintSportRest(); setSportRa('appuyer pour lancer'); return; }
+  setSportRa('appuyer pour arrêter'); sportRestT=setInterval(()=>{ sportRestLeft--; if(sportRestLeft<=0){ clearInterval(sportRestT); sportRestT=null; sportRestLeft=90; } paintSportRest(); },1000); }
+function paintSportRest(){ const el=document.getElementById('sportRest'); if(el) el.textContent=Math.floor(sportRestLeft/60)+':'+String(sportRestLeft%60).padStart(2,'0'); }
+function setSportRa(t){ const el=document.getElementById('sportRa'); if(el) el.textContent=t; }
+
+// 9.10 Rendu Sport
+function renderSport(){
+  const a=document.getElementById('sportApp'); if(!a) return;
+  if(sportScreen==='templates') a.innerHTML=viewSportTemplates();
+  else if(sportScreen==='session') a.innerHTML=viewSportSession();
+  else if(sportScreen==='history') a.innerHTML=viewSportHistory();
+  else if(sportScreen==='detail') a.innerHTML=viewSportDetail();
+}
+
 init();
 </script>
 </body>
