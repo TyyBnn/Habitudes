@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Habitudes">
+<meta name="theme-color" content="#17201c">
+<title>Suivi d'habitudes</title>
+<style>
+  /* =====================================================
+     STYLES
+     ===================================================== */
+  :root{
+    --paper:#faf9f5; --ink:#171d1a; --muted:#8b938c; --line:#e6e7e1;
+    --ring:#c9cbc2; --accent:#2f6b4f; --danger:#b23b3b; --card:#ffffff;
+    --shadow:0 1px 3px rgba(20,30,25,.06);
+    --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+  }
+  body.dark{
+    --paper:#12140f; --ink:#eef0e8; --muted:#7c837b; --line:#25281f;
+    --ring:#3a3f33; --card:#191c15; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+    background:var(--paper); color:var(--ink);
+    padding:calc(var(--safe-top) + 14px) 16px calc(var(--safe-bot) + 92px);
+    max-width:660px; margin:0 auto; line-height:1.4; -webkit-font-smoothing:antialiased;
+  }
+  header{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px}
+  .brand{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .gear{background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; padding:4px}
+  h1{font-size:25px; font-weight:700; letter-spacing:-.02em; margin:0 0 2px}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 16px; text-transform:capitalize}
+
+  .tabs{display:flex; gap:5px; background:var(--line); padding:4px; border-radius:12px; margin-bottom:16px}
+  .tab{flex:1; border:none; background:none; padding:8px 0; border-radius:9px; font-size:14px;
+    font-weight:600; color:var(--muted); cursor:pointer; transition:all .15s}
+  .tab.on{background:var(--card); color:var(--ink); box-shadow:var(--shadow)}
+
+  .nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
+  .nav button{background:var(--card); border:1px solid var(--line); color:var(--ink);
+    width:38px; height:38px; border-radius:10px; font-size:17px; cursor:pointer}
+  .nav .label{font-weight:600; font-size:15px; text-transform:capitalize}
+  .today-row{text-align:center; margin:0 0 14px}
+  .today-btn{border:none; background:none; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; padding:2px 6px}
+
+  /* ---- Vue Semaine ---- */
+  .wk{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 14px 12px;
+    margin-bottom:9px; box-shadow:var(--shadow)}
+  .wk-head{display:flex; align-items:center; gap:9px; margin-bottom:11px}
+  .wk-emoji{font-size:19px; width:24px; text-align:center}
+  .wk-name{font-weight:600; font-size:15px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer}
+  .wk-prog{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; flex-shrink:0; font-weight:600}
+  .wk-days{display:grid; grid-template-columns:repeat(7,1fr); gap:3px}
+  .wk-day{display:flex; flex-direction:column; align-items:center; gap:4px}
+  .wk-lab{font-size:10px; color:var(--muted); font-weight:600; text-align:center; line-height:1.15}
+  .wk-lab .num{display:block; font-size:11px; color:var(--muted); font-weight:400}
+  .wk-c{width:34px; height:34px; border-radius:50%; border:2px solid var(--ring); display:grid;
+    place-items:center; cursor:pointer; font-size:15px; background:transparent; transition:all .12s}
+  .wk-c.done{border-color:transparent; color:#fff}
+  .wk-c.off{border-style:dashed; opacity:.4; cursor:default}
+  .wk-c.future{opacity:.3; cursor:default}
+  .wk-c.today{outline:2px solid var(--ink); outline-offset:2px}
+
+  /* ---- Vue Mois ---- */
+  .mrow{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 12px 10px;
+    margin-bottom:9px; box-shadow:var(--shadow)}
+  .mrow-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; gap:8px}
+  .mrow-name{font-weight:600; font-size:14px; display:flex; align-items:center; gap:6px; min-width:0; cursor:pointer}
+  .mrow-name span.t{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .mrow-pct{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; flex-shrink:0}
+  .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
+  .wd{font-size:10px; color:var(--muted); text-align:center; font-weight:600; padding-bottom:2px}
+  .cell{aspect-ratio:1; border-radius:6px; border:1.5px solid var(--line); cursor:pointer;
+    display:grid; place-items:center; font-size:10.5px; color:var(--muted);
+    font-variant-numeric:tabular-nums; transition:background .12s,border-color .12s; background:transparent}
+  .cell.empty{border:none; cursor:default}
+  .cell.off{opacity:.35; cursor:default; border-style:dashed}
+  .cell.fill{color:#fff; border-color:transparent; font-weight:700}
+  .cell.today{outline:2px solid var(--ink); outline-offset:1px}
+  .cell.future{opacity:.3; cursor:default}
+
+  /* ---- Vue Année ---- */
+  .selrow{margin-bottom:12px}
+  .sel{width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:11px;
+    background:var(--card); color:var(--ink); font-size:15px}
+  .year{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:12px}
+  .ymonth{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px; box-shadow:var(--shadow)}
+  .ymonth h4{margin:0 0 6px; font-size:11px; color:var(--muted); font-weight:600; text-transform:capitalize; text-align:center}
+  .ygrid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px}
+  .ycell{aspect-ratio:1; border-radius:2px; background:var(--line)}
+
+  /* ---- Vue Stats ---- */
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 15px;
+    margin-bottom:9px; box-shadow:var(--shadow)}
+  .stat-top{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:600; font-size:15px; cursor:pointer}
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+  .kpi{text-align:center; padding:8px 4px; background:var(--paper); border-radius:9px}
+  .kpi .n{font-size:19px; font-weight:700; font-variant-numeric:tabular-nums}
+  .kpi .l{font-size:10.5px; color:var(--muted); margin-top:2px}
+
+  .empty-state{text-align:center; color:var(--muted); padding:48px 20px; font-size:15px}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0}
+
+  /* ---- FAB + feuilles ---- */
+  .fab{position:fixed; right:calc(50% - 330px + 16px); bottom:calc(var(--safe-bot) + 20px);
+    width:56px; height:56px; border-radius:50%; background:var(--accent); color:#fff; border:none;
+    font-size:28px; box-shadow:0 4px 14px rgba(20,30,25,.25); cursor:pointer; z-index:20}
+  @media(max-width:692px){ .fab{right:16px} }
+  .backdrop{position:fixed; inset:0; background:rgba(10,14,10,.4); z-index:30; display:none}
+  .backdrop.on{display:block}
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:40; background:var(--card);
+    border-radius:20px 20px 0 0; padding:20px 20px calc(var(--safe-bot) + 20px); transform:translateY(100%);
+    transition:transform .25s; max-width:660px; margin:0 auto; box-shadow:0 -4px 30px rgba(0,0,0,.15);
+    max-height:90vh; overflow-y:auto}
+  .sheet.on{transform:translateY(0)}
+  .sheet h2{font-size:18px; margin:0 0 14px}
+  .fld{margin-bottom:14px}
+  .fld label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px; font-weight:600}
+  .fld input[type=text], .fld input[type=number], .fld input[type=date], .fld select{
+    width:100%; padding:12px 13px; border:1px solid var(--line); border-radius:11px;
+    font-size:16px; background:var(--paper); color:var(--ink)}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap}
+  .seg{flex:1; min-width:80px; text-align:center; padding:10px 6px; border:1px solid var(--line);
+    border-radius:10px; font-size:13.5px; cursor:pointer; background:var(--paper); color:var(--ink)}
+  .seg.sel{border-color:var(--accent); background:var(--accent); color:#fff; font-weight:600}
+  .swatches,.icons{display:flex; gap:8px; flex-wrap:wrap}
+  .sw{width:32px; height:32px; border-radius:50%; cursor:pointer; border:3px solid transparent}
+  .sw.sel{border-color:var(--ink)}
+  .icn{width:40px; height:40px; border-radius:11px; border:2px solid transparent; background:var(--paper);
+    font-size:20px; cursor:pointer; display:grid; place-items:center}   /* bordure fixe 2px → aucun décalage */
+  .icn.sel{border-color:var(--accent)}
+  .wdays{display:flex; gap:5px}
+  .wday{flex:1; text-align:center; padding:9px 0; border:1px solid var(--line); border-radius:9px;
+    font-size:13px; cursor:pointer; background:var(--paper); color:var(--ink)}
+  .wday.sel{border-color:var(--accent); background:var(--accent); color:#fff; font-weight:600}
+  .btn{width:100%; padding:14px; border:none; border-radius:12px; font-size:16px; font-weight:700;
+    background:var(--accent); color:#fff; cursor:pointer; margin-top:4px}
+  .btn.ghost{background:var(--line); color:var(--ink); margin-top:8px}
+  .btn.danger{background:none; color:var(--danger); margin-top:4px}
+  .row-btns{display:flex; gap:8px}
+  .row-btns .btn{flex:1}
+  .hint{font-size:12px; color:var(--muted); line-height:1.5; margin-top:12px}
+  .hide{display:none!important}
+
+  /* ---- Écran de connexion ---- */
+  .auth{position:fixed; inset:0; z-index:100; background:var(--paper); display:flex; align-items:center; justify-content:center; padding:24px}
+  .auth-card{width:100%; max-width:360px; text-align:center}
+  .auth-logo{font-size:44px; margin-bottom:6px}
+  .auth h2{font-size:22px; margin:0 0 20px}
+  .auth input{width:100%; padding:14px; border:1px solid var(--line); border-radius:12px; font-size:16px;
+    background:var(--card); color:var(--ink); margin-bottom:10px}
+  .auth-msg{font-size:13px; min-height:18px; margin:2px 0 8px; color:var(--danger)}
+  .auth-msg.ok{color:var(--accent)}
+
+  /* ---- Bandeau d'erreur de sync ---- */
+  .flash{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(var(--safe-bot) + 84px);
+    background:var(--danger); color:#fff; padding:9px 16px; border-radius:20px; font-size:13px;
+    z-index:60; opacity:0; transition:opacity .2s; pointer-events:none}
+  .flash.on{opacity:1}
+</style>
+<!-- 0.1 Librairie Supabase (chargée depuis jsDelivr) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<!-- ======================================================
+     STRUCTURE
+     ====================================================== -->
+<header>
+  <span class="brand">Habitudes</span>
+  <button class="gear" onclick="openSettings()">⚙︎</button>
+</header>
+<h1 id="bigDate">—</h1>
+<p class="sub" id="bigSub"></p>
+
+<div class="tabs">
+  <button class="tab on" data-v="week"  onclick="setView('week')">Semaine</button>
+  <button class="tab"     data-v="month" onclick="setView('month')">Mois</button>
+  <button class="tab"     data-v="year"  onclick="setView('year')">Année</button>
+  <button class="tab"     data-v="stats" onclick="setView('stats')">Stats</button>
+</div>
+
+<div class="nav" id="navBar">
+  <button onclick="shift(-1)">‹</button>
+  <span class="label" id="navLabel"></span>
+  <button onclick="shift(1)">›</button>
+</div>
+<div class="today-row" id="todayRow"><button class="today-btn" onclick="goToday()">Aujourd'hui</button></div>
+
+<div id="content"></div>
+<button class="fab" onclick="openHabit()">+</button>
+
+<!-- Feuille : ajouter / modifier -->
+<div class="backdrop" id="backHabit" onclick="closeSheet('Habit')"></div>
+<div class="sheet" id="sheetHabit">
+  <h2 id="habitTitle">Nouvelle habitude</h2>
+  <div class="fld"><label>Nom</label>
+    <input type="text" id="fName" placeholder="ex. Sport, Lecture, Pas de sucre…" autocomplete="off"></div>
+  <div class="fld"><label>Icône</label><div class="icons" id="fIcons"></div></div>
+  <div class="fld"><label>Couleur</label><div class="swatches" id="fColors"></div></div>
+  <div class="fld"><label>Type</label>
+    <div class="segmented">
+      <div class="seg sel" data-kind="positive" onclick="pickKind('positive')">✅ À adopter</div>
+      <div class="seg"     data-kind="negative" onclick="pickKind('negative')">🚫 À réduire</div>
+    </div>
+  </div>
+  <div class="fld"><label>Fréquence</label>
+    <div class="segmented" id="fFreq">
+      <div class="seg sel" data-mode="daily"        onclick="pickFreq('daily')">Tous les jours</div>
+      <div class="seg"     data-mode="weekly"       onclick="pickFreq('weekly')">X / semaine</div>
+      <div class="seg"     data-mode="monthly"      onclick="pickFreq('monthly')">X / mois</div>
+      <div class="seg"     data-mode="specificDays" onclick="pickFreq('specificDays')">Jours précis</div>
+      <div class="seg"     data-mode="everyNDays"   onclick="pickFreq('everyNDays')">Tous les N jours</div>
+    </div>
+  </div>
+  <div class="fld hide" id="fTargetWrap"><label id="fTargetLbl">Combien de fois par semaine ?</label>
+    <input type="number" id="fTarget" min="1" value="4"></div>
+  <div class="fld hide" id="fDaysWrap"><label>Quels jours ?</label><div class="wdays" id="fDays"></div></div>
+  <div class="fld hide" id="fNWrap"><label>Tous les combien de jours ?</label>
+    <input type="number" id="fN" min="1" value="2"></div>
+  <div class="fld"><label>Date de début</label><input type="date" id="fStart"></div>
+  <div class="fld"><label>Date de fin (optionnelle)</label><input type="date" id="fEnd"></div>
+  <button class="btn" onclick="saveHabit()">Enregistrer</button>
+  <div id="editExtra" class="hide">
+    <div class="row-btns" style="margin-top:8px">
+      <button class="btn ghost" onclick="moveHabit(-1)">▲ Monter</button>
+      <button class="btn ghost" onclick="moveHabit(1)">▼ Descendre</button>
+    </div>
+    <button class="btn ghost" id="archBtn" onclick="toggleArchive()">Archiver</button>
+    <button class="btn danger" onclick="deleteHabit()">Supprimer (+ historique)</button>
+  </div>
+</div>
+
+<!-- Feuille : réglages -->
+<div class="backdrop" id="backSet" onclick="closeSheet('Set')"></div>
+<div class="sheet" id="sheetSet">
+  <h2>Réglages</h2>
+  <div class="fld"><label>Thème</label>
+    <div class="segmented">
+      <div class="seg" data-theme="auto"  onclick="setTheme('auto')">Auto</div>
+      <div class="seg" data-theme="light" onclick="setTheme('light')">Clair</div>
+      <div class="seg" data-theme="dark"  onclick="setTheme('dark')">Sombre</div>
+    </div>
+  </div>
+  <div class="row-btns" style="margin-top:6px">
+    <button class="btn ghost" onclick="exportData()">Exporter (iCloud)</button>
+    <button class="btn ghost" onclick="document.getElementById('importFile').click()">Importer</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" class="hide" onchange="importData(event)">
+  <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--muted)">
+    <input type="checkbox" id="showArchived" onchange="render()"> Afficher les habitudes archivées
+  </label>
+  <p class="hint" id="userLine"></p>
+  <button class="btn ghost" onclick="signOut()">Se déconnecter</button>
+</div>
+
+<!-- Écran de connexion -->
+<div class="auth" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">✅</div>
+    <h2 id="authTitle">Connexion</h2>
+    <input type="email" id="authEmail" placeholder="E-mail" autocomplete="email">
+    <input type="password" id="authPass" placeholder="Mot de passe" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doAuth()">
+    <div class="auth-msg" id="authMsg"></div>
+    <button class="btn" id="authBtn" onclick="doAuth()">Se connecter</button>
+    <button class="btn ghost" onclick="toggleAuthMode()"><span id="authToggle">Créer un compte</span></button>
+  </div>
+</div>
+
+<div class="flash" id="flash"></div>
+
+<script>
+/* ============================================================
+   0. CONFIGURATION SUPABASE
+   ============================================================ */
+// 0.1 Tes identifiants (clés PUBLIQUES — sûres à publier)
+const SUPABASE_URL = 'https://cqoyrrzbfciqtsntdmwx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxb3lycnpiZmNpcXRzbnRkbXd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NjE5NzEsImV4cCI6MjEwMTIzNzk3MX0.oGcwKKWq8SPiu5MY5j5klTHpA7pS7jGZ9aQRrGu8MaA';
+// 0.2 Client Supabase
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let session = null;                       // 0.3 session utilisateur courante
+
+/* ============================================================
+   1. CONSTANTES
+   ============================================================ */
+const KEY='habitsAppV4';                                   // 1.0 clé du cache local
+const COLORS=['#2f6b4f','#3a6ea5','#b5643a','#7a5aa6','#b08a2e','#a83e5b','#3d7d74','#5a5a5a'];
+const ICONS=['💪','🏃','🚶','🧘','💧','🥗','😴','📚','✍️','🎯','💊','🦷',
+             '☀️','🧴','🚭','🍫','📵','🍺','💰','💻','🎸','🧹','🙏','🌱'];
+const WD=['L','M','M','J','V','S','D'];
+const WD_FULL=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+/* ============================================================
+   2. DONNÉES (Supabase + cache local)
+   ============================================================ */
+let data = loadCache();                    // 2.0 { habits:[], completions:{}, theme }
+let view = 'week';
+let cursor = new Date();
+let editingId = null;
+let yearHabitId = 'all';
+
+// 2.1 Cache local (affichage instantané + secours)
+function loadCache(){ try{ const d=JSON.parse(localStorage.getItem(KEY)); if(d&&d.habits) return d; }catch(e){}
+  return { habits:[], completions:{}, theme:'auto' }; }
+function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+
+// 2.2 Chargement depuis Supabase (habitudes + complétions de l'utilisateur)
+async function loadAll(){
+  const [{data:hs,error:e1},{data:cs,error:e2}] = await Promise.all([
+    sb.from('habits').select('*').order('sort_order'),
+    sb.from('completions').select('*')
+  ]);
+  if(e1||e2){ flash('Chargement en ligne échoué'); return; }
+  data.habits = hs||[];
+  data.completions = {};
+  (cs||[]).forEach(r=>{ (data.completions[r.habit_id]=data.completions[r.habit_id]||{})[r.day]=r.count; });
+  cacheLocal();
+}
+
+// 2.3 Complétions : lecture (mémoire) + écriture (optimiste puis Supabase)
+function getCount(hid, k){ return (data.completions[hid] && data.completions[hid][k]) || 0; }
+function setCount(hid, k, n){                                  // 2.3.1 appelé par l'UI
+  if(!data.completions[hid]) data.completions[hid]={};
+  if(n<=0){ delete data.completions[hid][k]; persistDel(hid,k); }
+  else { data.completions[hid][k]=n; persistUp(hid,k,n); }
+  cacheLocal();
+}
+async function persistUp(hid,k,n){                             // 2.3.2 enregistre en ligne
+  const {error}=await sb.from('completions').upsert(
+    { habit_id:hid, user_id:session.user.id, day:k, count:n }, { onConflict:'habit_id,day' });
+  if(error) flash('Sync échouée');
+}
+async function persistDel(hid,k){
+  const {error}=await sb.from('completions').delete().eq('habit_id',hid).eq('day',k);
+  if(error) flash('Sync échouée');
+}
+
+/* ============================================================
+   3. LOGIQUE MÉTIER (règles) — identique à la V3
+   ============================================================ */
+function key(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fromKey(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function stripTime(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function weekdayISO(d){ return ((d.getDay()+6)%7)+1; }
+function diffDays(a,b){ return Math.round((stripTime(a)-stripTime(b))/86400000); }
+function sameDay(a,b){ return a.toDateString()===b.toDateString(); }
+function isFuture(d){ return stripTime(d) > stripTime(new Date()); }
+function startOfWeek(d){ return addDays(stripTime(d), -(weekdayISO(d)-1)); }
+
+function inRange(h, d){
+  if(h.start_date && stripTime(d) < fromKey(h.start_date)) return false;
+  if(h.end_date && stripTime(d) > fromKey(h.end_date))     return false;
+  return true;
+}
+function dueOn(h, d){
+  if(!inRange(h,d)) return false;
+  if(h.kind==='negative') return true;
+  switch(h.freq_mode){
+    case 'daily':        return true;
+    case 'weekly':       return true;
+    case 'monthly':      return true;
+    case 'specificDays': return (h.freq_days||[]).includes(weekdayISO(d));
+    case 'everyNDays':   { const diff=diffDays(d, fromKey(h.start_date)); return diff>=0 && diff%(h.freq_n||1)===0; }
+    default:             return true;
+  }
+}
+function daySuccess(h, d){
+  if(!dueOn(h,d)) return false;
+  const c=getCount(h.id, key(d));
+  if(h.kind==='negative') return c===0;
+  return c>0;
+}
+function periodTarget(h){ return h.freq_target||1; }
+function periodDoneCount(h, refDate){
+  let start, end;
+  if(h.freq_mode==='weekly'){ start=startOfWeek(refDate); end=addDays(start,6); }
+  else { start=new Date(refDate.getFullYear(),refDate.getMonth(),1); end=new Date(refDate.getFullYear(),refDate.getMonth()+1,0); }
+  let n=0;
+  for(let d=new Date(start); d<=end; d=addDays(d,1)){ if(inRange(h,d) && getCount(h.id,key(d))>0) n++; }
+  return n;
+}
+function isPeriodBased(h){ return h.freq_mode==='weekly'||h.freq_mode==='monthly'; }
+function currentStreak(h){
+  const today=stripTime(new Date());
+  if(isPeriodBased(h)){
+    let streak=0, ref=new Date(today), first=true;
+    for(let i=0;i<520;i++){
+      const met=periodDoneCount(h,ref)>=periodTarget(h);
+      if(met) streak++; else if(!first) break;
+      first=false;
+      ref = h.freq_mode==='weekly' ? addDays(ref,-7) : new Date(ref.getFullYear(),ref.getMonth()-1,1);
+      if(h.start_date && ref < fromKey(h.start_date)) break;
+    }
+    return streak;
+  }
+  let streak=0, d=new Date(today), first=true;
+  for(let i=0;i<2000;i++){
+    if(dueOn(h,d)){ if(daySuccess(h,d)) streak++; else if(!(first && sameDay(d,today))) break; }
+    first=false; d=addDays(d,-1);
+    if(h.start_date && d < addDays(fromKey(h.start_date),-1)) break;
+  }
+  return streak;
+}
+function recordStreak(h){
+  const today=stripTime(new Date());
+  const start = h.start_date ? fromKey(h.start_date) : addDays(today,-365);
+  let best=0, cur=0;
+  if(isPeriodBased(h)){
+    let ref = h.freq_mode==='weekly' ? startOfWeek(start) : new Date(start.getFullYear(),start.getMonth(),1);
+    while(ref<=today){
+      const met = periodDoneCount(h,ref) >= periodTarget(h);
+      cur = met ? cur+1 : 0; best=Math.max(best,cur);
+      ref = h.freq_mode==='weekly' ? addDays(ref,7) : new Date(ref.getFullYear(),ref.getMonth()+1,1);
+    }
+    return best;
+  }
+  for(let d=new Date(start); d<=today; d=addDays(d,1)){
+    if(!dueOn(h,d)) continue;
+    cur = daySuccess(h,d) ? cur+1 : 0; best=Math.max(best,cur);
+  }
+  return best;
+}
+function completionRate(h, from, to){
+  let due=0, ok=0;
+  for(let d=new Date(from); d<=to; d=addDays(d,1)){
+    if(isFuture(d)) break;
+    if(!dueOn(h,d)) continue;
+    due++; if(daySuccess(h,d)) ok++;
+  }
+  return due? Math.round(ok/due*100) : 0;
+}
+function totalDone(h){ const m=data.completions[h.id]||{}; let n=0; for(const k in m){ if(m[k]>0) n++; } return n; }
+function visibleHabits(){
+  const showArch=document.getElementById('showArchived') && document.getElementById('showArchived').checked;
+  return data.habits.filter(h=>showArch || !h.archived).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+}
+
+/* ============================================================
+   4. RENDU / VUES — identique à la V3
+   ============================================================ */
+function render(){
+  applyTheme();
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.v===view));
+  const periodNav=(view==='week'||view==='month'||view==='year');
+  document.getElementById('navBar').classList.toggle('hide', !periodNav);
+  document.getElementById('todayRow').classList.toggle('hide', view==='stats');
+
+  if(view==='week'){
+    const s=startOfWeek(cursor), e=addDays(s,6);
+    const range=s.getDate()+(s.getMonth()!==e.getMonth()?' '+MONTHS[s.getMonth()].slice(0,4):'')+' – '+e.getDate()+' '+MONTHS[e.getMonth()].slice(0,4);
+    const thisWeek=sameDay(startOfWeek(new Date()),s);
+    document.getElementById('bigDate').textContent=range;
+    document.getElementById('bigSub').textContent=thisWeek?'Cette semaine':s.getFullYear();
+    document.getElementById('navLabel').textContent=thisWeek?'Cette semaine':range;
+  } else if(view==='month'){
+    document.getElementById('bigDate').textContent=MONTHS[cursor.getMonth()];
+    document.getElementById('bigSub').textContent=cursor.getFullYear();
+    document.getElementById('navLabel').textContent=MONTHS[cursor.getMonth()]+' '+cursor.getFullYear();
+  } else if(view==='year'){
+    document.getElementById('bigDate').textContent=cursor.getFullYear();
+    document.getElementById('bigSub').textContent='Vue annuelle';
+    document.getElementById('navLabel').textContent=cursor.getFullYear();
+  } else {
+    document.getElementById('bigDate').textContent='Statistiques';
+    document.getElementById('bigSub').textContent='Toutes tes habitudes';
+  }
+
+  const c=document.getElementById('content'); c.innerHTML='';
+  if(visibleHabits().length===0){
+    c.innerHTML='<div class="empty-state">Aucune habitude.<br>Appuie sur + pour commencer.</div>'; return;
+  }
+  if(view==='week')  renderWeek(c);
+  if(view==='month') renderMonth(c);
+  if(view==='year')  renderYear(c);
+  if(view==='stats') renderStats(c);
+}
+function renderWeek(c){
+  const start=startOfWeek(cursor), today=new Date();
+  visibleHabits().forEach(h=>{
+    let daysHtml='';
+    for(let i=0;i<7;i++){
+      const date=addDays(start,i), k=key(date);
+      const due=dueOn(h,date), future=isFuture(date), isToday=sameDay(date,today), cnt=getCount(h.id,k);
+      let cls='wk-c', st='', mark='';
+      if(!due){ cls+=' off'; } else if(future){ cls+=' future'; }
+      if(due && !future){
+        if(h.kind==='negative'){ if(cnt>0){ cls+=' done'; st=`background:${h.color};opacity:.55;`; mark='✕'; } }
+        else { if(cnt>0){ cls+=' done'; st=`background:${h.color};`; mark='✓'; } }
+      }
+      if(isToday) cls+=' today';
+      daysHtml+=`<div class="wk-day"><div class="wk-lab">${WD[i]}<span class="num">${date.getDate()}</span></div>
+        <div class="${cls}" style="${st}" data-k="${k}">${mark}</div></div>`;
+    }
+    const el=document.createElement('div'); el.className='wk';
+    el.innerHTML=`<div class="wk-head"><span class="wk-emoji">${h.emoji||'•'}</span>
+        <span class="wk-name" onclick="openHabit('${h.id}')">${esc(h.name)}</span>
+        <span class="wk-prog">${weekProgress(h,start)}</span></div><div class="wk-days">${daysHtml}</div>`;
+    el.querySelectorAll('.wk-c:not(.off):not(.future)').forEach(cell=>{
+      cell.onclick=()=>{ const kk=cell.dataset.k, cur=getCount(h.id,kk); setCount(h.id,kk,cur>0?0:1); render(); };
+    });
+    c.appendChild(el);
+  });
+}
+function weekProgress(h, weekStart){
+  if(h.freq_mode==='weekly')  return periodDoneCount(h,weekStart)+'/'+periodTarget(h);
+  if(h.freq_mode==='monthly') return periodDoneCount(h,weekStart)+'/'+periodTarget(h)+' · mois';
+  const s=currentStreak(h);
+  if(h.kind==='negative') return s>0?('🌱 '+s):'—';
+  return s>0?('🔥 '+s):'—';
+}
+function renderMonth(c){
+  const y=cursor.getFullYear(), m=cursor.getMonth();
+  const offset=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate(), today=new Date();
+  visibleHabits().forEach(h=>{
+    const rate=completionRate(h,new Date(y,m,1), new Date(y,m,days));
+    let cells=''; WD.forEach(w=>cells+=`<div class="wd">${w}</div>`);
+    for(let i=0;i<offset;i++) cells+='<div class="cell empty"></div>';
+    for(let dd=1; dd<=days; dd++){
+      const date=new Date(y,m,dd);
+      const due=dueOn(h,date), future=isFuture(date), isToday=sameDay(date,today), cnt=getCount(h.id,key(date));
+      let cls='cell', st='';
+      if(!due){ cls+=' off'; } else if(future){ cls+=' future'; }
+      if(due && !future){
+        if(h.kind==='negative'){ if(cnt>0){ cls+=' fill'; st=`background:${h.color};opacity:.5;`; } }
+        else { if(cnt>0){ cls+=' fill'; st=`background:${h.color};`; } }
+      }
+      if(isToday) cls+=' today';
+      cells+=`<div class="${cls}" style="${st}" data-d="${dd}">${dd}</div>`;
+    }
+    const row=document.createElement('div'); row.className='mrow';
+    row.innerHTML=`<div class="mrow-top"><div class="mrow-name" onclick="openHabit('${h.id}')">
+        <span class="dot" style="background:${h.color}"></span><span>${h.emoji||''}</span><span class="t">${esc(h.name)}</span></div>
+        <div class="mrow-pct">${rate}%</div></div><div class="grid">${cells}</div>`;
+    row.querySelectorAll('.cell:not(.empty):not(.off):not(.future)').forEach(cell=>{
+      cell.onclick=()=>{ const kk=key(new Date(y,m,parseInt(cell.dataset.d))), cur=getCount(h.id,kk);
+        setCount(h.id,kk,cur>0?0:1); render(); };
+    });
+    c.appendChild(row);
+  });
+}
+function renderYear(c){
+  const sel=document.createElement('div'); sel.className='selrow';
+  let opts='<option value="all">Toutes les habitudes</option>';
+  visibleHabits().forEach(h=>opts+=`<option value="${h.id}" ${yearHabitId===h.id?'selected':''}>${h.emoji||''} ${esc(h.name)}</option>`);
+  sel.innerHTML=`<select class="sel" id="yearSel">${opts}</select>`; c.appendChild(sel);
+  document.getElementById('yearSel').onchange=(e)=>{ yearHabitId=e.target.value; render(); };
+  const y=cursor.getFullYear(); const wrap=document.createElement('div'); wrap.className='year';
+  for(let m=0;m<12;m++){
+    const offset=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate();
+    let cells='';
+    for(let i=0;i<offset;i++) cells+='<div class="ycell" style="background:transparent"></div>';
+    for(let dd=1; dd<=days; dd++){
+      const date=new Date(y,m,dd); const {ratio,color}=dayIntensity(date);
+      const bg=ratio>0?hexA(color,0.2+0.8*ratio):'var(--line)';
+      cells+=`<div class="ycell" style="background:${bg}" title="${key(date)}"></div>`;
+    }
+    const mb=document.createElement('div'); mb.className='ymonth';
+    mb.innerHTML=`<h4>${MONTHS[m].slice(0,3)}</h4><div class="ygrid">${cells}</div>`; wrap.appendChild(mb);
+  }
+  c.appendChild(wrap);
+  const tip=document.createElement('p'); tip.className='hint'; tip.textContent='Plus une case est foncée, plus la journée a été réussie.'; c.appendChild(tip);
+}
+function dayIntensity(date){
+  if(isFuture(date)) return {ratio:0,color:'#000'};
+  let list = yearHabitId==='all' ? visibleHabits() : visibleHabits().filter(h=>h.id===yearHabitId);
+  let due=0, ok=0, color='#2f6b4f';
+  list.forEach(h=>{ if(dueOn(h,date)){ due++; if(daySuccess(h,date)){ ok++; if(yearHabitId!=='all') color=h.color; } } });
+  return {ratio: due? ok/due : 0, color};
+}
+function renderStats(c){
+  visibleHabits().forEach(h=>{
+    const now=new Date();
+    const monthRate=completionRate(h, new Date(now.getFullYear(),now.getMonth(),1), now);
+    const cur=currentStreak(h), rec=recordStreak(h), tot=totalDone(h);
+    const totLabel=h.kind==='negative'?'écarts':'jours';
+    const el=document.createElement('div'); el.className='stat';
+    el.innerHTML=`<div class="stat-top" onclick="openHabit('${h.id}')"><span class="dot" style="background:${h.color}"></span>
+        <span>${h.emoji||''} ${esc(h.name)}</span></div>
+      <div class="stat-grid">
+        <div class="kpi"><div class="n">${monthRate}%</div><div class="l">ce mois</div></div>
+        <div class="kpi"><div class="n">${cur}</div><div class="l">série</div></div>
+        <div class="kpi"><div class="n">${rec}</div><div class="l">record</div></div>
+        <div class="kpi"><div class="n">${tot}</div><div class="l">${totLabel}</div></div>
+      </div>
+      ${isPeriodBased(h)?`<p class="hint">Période en cours : ${periodDoneCount(h,now)}/${periodTarget(h)} ${h.freq_mode==='weekly'?'cette semaine':'ce mois'}.</p>`:''}`;
+    c.appendChild(el);
+  });
+}
+function esc(s){ return (s||'').replace(/[&<>"]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[x])); }
+function hexA(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+
+/* ============================================================
+   5. INTERACTIONS (navigation & édition → écrivent dans Supabase)
+   ============================================================ */
+function setView(v){ view=v; render(); }
+function shift(n){
+  if(view==='week') cursor=addDays(cursor,7*n);
+  else if(view==='month') cursor=new Date(cursor.getFullYear(),cursor.getMonth()+n,1);
+  else if(view==='year') cursor=new Date(cursor.getFullYear()+n,cursor.getMonth(),1);
+  render();
+}
+function goToday(){ cursor=new Date(); render(); }
+
+let form={ emoji:ICONS[0], color:COLORS[0], kind:'positive', freq:'daily', days:[1,3,5] };
+function buildIcons(){ const w=document.getElementById('fIcons'); w.innerHTML='';
+  ICONS.forEach(e=>{ const b=document.createElement('div'); b.className='icn'+(e===form.emoji?' sel':'');
+    b.textContent=e; b.onclick=()=>{ form.emoji=e; buildIcons(); }; w.appendChild(b); }); }
+function buildColors(){ const w=document.getElementById('fColors'); w.innerHTML='';
+  COLORS.forEach(col=>{ const s=document.createElement('div'); s.className='sw'+(col===form.color?' sel':'');
+    s.style.background=col; s.onclick=()=>{ form.color=col; buildColors(); }; w.appendChild(s); }); }
+function buildWDays(){ const w=document.getElementById('fDays'); w.innerHTML='';
+  WD.forEach((lab,i)=>{ const iso=i+1; const b=document.createElement('div');
+    b.className='wday'+(form.days.includes(iso)?' sel':''); b.textContent=lab;
+    b.onclick=()=>{ form.days=form.days.includes(iso)?form.days.filter(x=>x!==iso):[...form.days,iso]; buildWDays(); };
+    w.appendChild(b); }); }
+function pickKind(k){ form.kind=k; document.querySelectorAll('#sheetHabit [data-kind]').forEach(s=>s.classList.toggle('sel',s.dataset.kind===k)); }
+function pickFreq(m){ form.freq=m; document.querySelectorAll('#fFreq [data-mode]').forEach(s=>s.classList.toggle('sel',s.dataset.mode===m));
+  document.getElementById('fTargetWrap').classList.toggle('hide', !(m==='weekly'||m==='monthly'));
+  document.getElementById('fTargetLbl').textContent = m==='monthly'?'Combien de fois par mois ?':'Combien de fois par semaine ?';
+  document.getElementById('fDaysWrap').classList.toggle('hide', m!=='specificDays');
+  document.getElementById('fNWrap').classList.toggle('hide', m!=='everyNDays'); }
+
+function openHabit(id){
+  editingId=id||null;
+  const h=id?data.habits.find(x=>x.id===id):null;
+  document.getElementById('habitTitle').textContent=id?'Modifier':'Nouvelle habitude';
+  document.getElementById('editExtra').classList.toggle('hide',!id);
+  form={ emoji:h?h.emoji:ICONS[0], color:h?h.color:COLORS[data.habits.length%COLORS.length],
+    kind:h?h.kind:'positive', freq:h?h.freq_mode:'daily', days:h?(h.freq_days||[1,3,5]):[1,3,5] };
+  document.getElementById('fName').value=h?h.name:'';
+  document.getElementById('fTarget').value=h?(h.freq_target||4):4;
+  document.getElementById('fN').value=h?(h.freq_n||2):2;
+  document.getElementById('fStart').value=h?h.start_date:key(new Date());
+  document.getElementById('fEnd').value=h&&h.end_date?h.end_date:'';
+  if(id) document.getElementById('archBtn').textContent = h.archived?'Désarchiver':'Archiver';
+  buildIcons(); buildColors(); buildWDays(); pickKind(form.kind); pickFreq(form.freq);
+  openSheet('Habit');
+  if(!id) setTimeout(()=>document.getElementById('fName').focus(),300);
+}
+// 5.1 Enregistrer (insert ou update dans Supabase)
+async function saveHabit(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){ document.getElementById('fName').focus(); return; }
+  const rec={
+    name, emoji:form.emoji, color:form.color, kind:form.kind, freq_mode:form.freq,
+    freq_target: Math.max(1,parseInt(document.getElementById('fTarget').value)||1),
+    freq_days: form.days.slice().sort(),
+    freq_n: Math.max(1,parseInt(document.getElementById('fN').value)||1),
+    start_date: document.getElementById('fStart').value || key(new Date()),
+    end_date: document.getElementById('fEnd').value || null,
+  };
+  if(editingId){                                        // 5.1.1 modification
+    Object.assign(data.habits.find(x=>x.id===editingId), rec);
+    cacheLocal(); closeSheet('Habit'); render();
+    const {error}=await sb.from('habits').update(rec).eq('id',editingId);
+    if(error) flash('Sauvegarde échouée');
+  } else {                                              // 5.1.2 création
+    rec.user_id=session.user.id; rec.sort_order=data.habits.length; rec.archived=false;
+    const {data:row,error}=await sb.from('habits').insert(rec).select().single();
+    if(error){ flash('Création échouée'); return; }
+    data.habits.push(row); cacheLocal(); closeSheet('Habit'); render();
+  }
+}
+// 5.2 Réordonner / archiver / supprimer
+async function moveHabit(dir){
+  const list=data.habits.slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  const i=list.findIndex(x=>x.id===editingId), j=i+dir;
+  if(j<0||j>=list.length) return;
+  [list[i].sort_order,list[j].sort_order]=[list[j].sort_order||0,list[i].sort_order||0];
+  cacheLocal(); render();
+  await sb.from('habits').update({sort_order:list[i].sort_order}).eq('id',list[i].id);
+  await sb.from('habits').update({sort_order:list[j].sort_order}).eq('id',list[j].id);
+}
+async function toggleArchive(){
+  const h=data.habits.find(x=>x.id===editingId); h.archived=!h.archived;
+  cacheLocal(); closeSheet('Habit'); render();
+  const {error}=await sb.from('habits').update({archived:h.archived}).eq('id',h.id);
+  if(error) flash('Sync échouée');
+}
+async function deleteHabit(){
+  if(!confirm('Supprimer cette habitude et tout son historique ?')) return;
+  const id=editingId;
+  data.habits=data.habits.filter(x=>x.id!==id); delete data.completions[id];
+  cacheLocal(); closeSheet('Habit'); render();
+  const {error}=await sb.from('habits').delete().eq('id',id);   // cascade → supprime les complétions
+  if(error) flash('Suppression échouée');
+}
+
+/* ============================================================
+   6. RÉGLAGES & DONNÉES
+   ============================================================ */
+function setTheme(t){ data.theme=t; cacheLocal(); applyTheme();
+  document.querySelectorAll('#sheetSet [data-theme]').forEach(s=>s.classList.toggle('sel',s.dataset.theme===t)); }
+function applyTheme(){
+  const t=data.theme||'auto';
+  const dark = t==='dark' || (t==='auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.body.classList.toggle('dark', dark);
+}
+async function exportData(){
+  const name='habitudes-'+key(new Date())+'.json', json=JSON.stringify(data,null,2);
+  const file=new File([json],name,{type:'application/json'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file],title:name}); return; }catch(e){ if(e.name==='AbortError') return; }
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([json],{type:'application/json'})); a.download=name; a.click();
+}
+function importData(e){
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=async ()=>{ try{ const d=JSON.parse(r.result); if(!d.habits){ alert('Fichier invalide.'); return; }
+      if(!confirm('Importer remplacera tes données en ligne. Continuer ?')) return;
+      await importToSupabase(d); closeSheet('Set');
+    }catch(err){ alert('Lecture impossible.'); } };
+  r.readAsText(f); e.target.value='';
+}
+// 6.1 Import : réécrit habitudes + complétions dans Supabase
+async function importToSupabase(d){
+  await sb.from('habits').delete().neq('id','00000000-0000-0000-0000-000000000000'); // vide (RLS = mes lignes)
+  for(const h of d.habits){
+    const rec={ name:h.name, emoji:h.emoji, color:h.color, kind:h.kind, freq_mode:h.freq_mode,
+      freq_target:h.freq_target, freq_days:h.freq_days||[], freq_n:h.freq_n,
+      start_date:h.start_date, end_date:h.end_date, sort_order:h.sort_order||0, archived:!!h.archived,
+      user_id:session.user.id };
+    const {data:row,error}=await sb.from('habits').insert(rec).select().single();
+    if(error){ flash('Import partiel'); continue; }
+    const comps=(d.completions&&d.completions[h.id])||{};
+    const rows=Object.keys(comps).map(day=>({habit_id:row.id,user_id:session.user.id,day,count:comps[day]}));
+    if(rows.length) await sb.from('completions').insert(rows);
+  }
+  await loadAll(); render();
+}
+function openSettings(){
+  document.querySelectorAll('#sheetSet [data-theme]').forEach(s=>s.classList.toggle('sel',s.dataset.theme===(data.theme||'auto')));
+  document.getElementById('userLine').textContent = session? ('Connecté : '+session.user.email) : '';
+  openSheet('Set');
+}
+
+/* ============================================================
+   7. AUTHENTIFICATION (écran de connexion)
+   ============================================================ */
+let authMode='signin';                                  // 7.0 'signin' | 'signup'
+function showAuth(){ document.getElementById('authScreen').classList.remove('hide'); }
+function hideAuth(){ document.getElementById('authScreen').classList.add('hide'); }
+function toggleAuthMode(){
+  authMode = authMode==='signin' ? 'signup' : 'signin';
+  document.getElementById('authTitle').textContent = authMode==='signin'?'Connexion':'Créer un compte';
+  document.getElementById('authBtn').textContent    = authMode==='signin'?'Se connecter':'Créer le compte';
+  document.getElementById('authToggle').textContent = authMode==='signin'?'Créer un compte':'J\'ai déjà un compte';
+  document.getElementById('authMsg').textContent='';
+}
+async function doAuth(){
+  const email=document.getElementById('authEmail').value.trim();
+  const password=document.getElementById('authPass').value;
+  const msg=document.getElementById('authMsg'); msg.className='auth-msg'; msg.textContent='…';
+  if(!email||!password){ msg.textContent='E-mail et mot de passe requis.'; return; }
+  let res;
+  if(authMode==='signup') res=await sb.auth.signUp({email,password});
+  else res=await sb.auth.signInWithPassword({email,password});
+  if(res.error){ msg.textContent=res.error.message; return; }
+  if(authMode==='signup' && !res.data.session){          // confirmation e-mail activée
+    msg.className='auth-msg ok'; msg.textContent='Compte créé — vérifie tes e-mails pour confirmer.'; return;
+  }
+  // sinon : onAuthStateChange prend le relais (afterLogin)
+}
+async function signOut(){ await sb.auth.signOut(); }
+
+/* ============================================================
+   8. UTILITAIRES + INITIALISATION
+   ============================================================ */
+function openSheet(n){ document.getElementById('back'+n).classList.add('on'); document.getElementById('sheet'+n).classList.add('on'); }
+function closeSheet(n){ document.getElementById('back'+n).classList.remove('on'); document.getElementById('sheet'+n).classList.remove('on'); }
+let flashTimer=null;
+function flash(msg){ const f=document.getElementById('flash'); f.textContent=msg; f.classList.add('on');
+  clearTimeout(flashTimer); flashTimer=setTimeout(()=>f.classList.remove('on'),2600); }
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+// 8.1 Après connexion réussie : charger les données puis afficher
+async function afterLogin(){ hideAuth(); await loadAll(); render(); }
+
+// 8.2 Démarrage
+async function init(){
+  applyTheme(); render();                               // affiche le cache derrière l'écran d'auth
+  const { data:{ session:s } } = await sb.auth.getSession();
+  session=s;
+  if(session) afterLogin(); else showAuth();
+  sb.auth.onAuthStateChange((_e,s)=>{
+    session=s;
+    if(s){ afterLogin(); }
+    else { data.habits=[]; data.completions={}; cacheLocal(); render(); showAuth(); }
+  });
+}
+init();
+</script>
+</body>
+</html>
