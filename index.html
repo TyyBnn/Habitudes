@@ -197,6 +197,7 @@
   .presc b{color:var(--ink); font-weight:600}
   .spnotes{font-size:12.5px; color:var(--muted); background:var(--paper); border-radius:10px; padding:10px 12px; margin:0 0 12px; white-space:pre-line; line-height:1.5}
   .entry{display:grid; grid-template-columns:1fr 1fr 46px; gap:9px; align-items:end}
+  .entry2{display:grid; grid-template-columns:1fr 52px; gap:12px; align-items:end}
   .field label{display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-weight:600; margin-bottom:5px; text-align:center}
   .field .ro{padding:12px 4px; border:1px dashed var(--line); border-radius:11px; text-align:center; font-size:15px; font-weight:600; color:var(--muted)}
   .field input{width:100%; padding:12px 4px; border:1px solid var(--line); border-radius:11px; font-size:18px; text-align:center; background:var(--paper); color:var(--ink); font-variant-numeric:tabular-nums; font-weight:700}
@@ -205,9 +206,10 @@
   .chk{width:46px; height:46px; border-radius:50%; border:2px solid var(--ring); display:grid; place-items:center; cursor:pointer; font-size:18px}
   .chk.on{border-color:transparent; background:var(--accent); color:#fff}
   .finish{width:100%; padding:15px; border:none; border-radius:13px; background:var(--accent); color:#fff; font-size:16px; font-weight:700; cursor:pointer; margin-top:6px}
-  .rest{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(var(--safe-bot) + 18px); width:calc(100% - 32px); max-width:608px; background:var(--ink); color:var(--paper); border-radius:14px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 6px 20px rgba(0,0,0,.25); cursor:pointer; z-index:25}
-  .rest .lbl{font-size:13px; opacity:.8}
-  .rest .cd{font-size:20px; font-weight:700; font-variant-numeric:tabular-nums}
+  .restbtn{position:fixed; left:16px; bottom:calc(var(--safe-bot) + 18px); width:84px; height:84px; border-radius:20px; background:var(--ink); color:var(--paper); border:none; font-size:23px; font-weight:800; font-variant-numeric:tabular-nums; box-shadow:0 6px 20px rgba(0,0,0,.28); cursor:pointer; z-index:25; display:grid; place-items:center}
+  .restbtn.run{background:var(--accent)}
+  .cell.before{opacity:.3; background:var(--line); border-color:transparent; cursor:default}
+  .linklike{background:none; border:none; color:var(--muted); font-size:13px; text-decoration:underline; cursor:pointer; margin-top:12px; display:block; width:100%; text-align:center}
   .hist{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:9px; box-shadow:var(--shadow); cursor:pointer; display:flex; align-items:center; gap:10px}
   .hist-b{flex:1}
   .hist-n{font-weight:600; font-size:15px}
@@ -349,6 +351,7 @@
     <div class="auth-msg" id="authMsg"></div>
     <button class="btn" id="authBtn" onclick="doAuth()">Se connecter</button>
     <button class="btn ghost" onclick="toggleAuthMode()"><span id="authToggle">Créer un compte</span></button>
+    <button class="linklike" onclick="resetPassword()">Mot de passe oublié ?</button>
   </div>
 </div>
 
@@ -564,8 +567,9 @@ function renderMonth(c){
     for(let dd=1; dd<=days; dd++){
       const date=new Date(y,m,dd);
       const due=dueOn(h,date), future=isFuture(date), isToday=sameDay(date,today), cnt=getCount(h.id,key(date));
+      const beforeStart = h.start_date && stripTime(date) < fromKey(h.start_date);
       let cls='cell', st='';
-      if(!due){ cls+=' off'; } else if(future){ cls+=' future'; }
+      if(beforeStart){ cls+=' before'; } else if(!due){ cls+=' off'; } else if(future){ cls+=' future'; }
       if(due && !future){
         if(h.kind==='negative'){ if(cnt>0){ cls+=' fill'; st=`background:${h.color};opacity:.5;`; } }
         else { if(cnt>0){ cls+=' fill'; st=`background:${h.color};`; } }
@@ -577,7 +581,7 @@ function renderMonth(c){
     row.innerHTML=`<div class="mrow-top"><div class="mrow-name">
         <span class="dot" style="background:${h.color}"></span><span>${h.emoji||''}</span><span class="t">${esc(h.name)}</span></div>
         <div class="mrow-pct">${rate}%</div></div><div class="grid">${cells}</div>`;
-    row.querySelectorAll('.cell:not(.empty):not(.off):not(.future)').forEach(cell=>{
+    row.querySelectorAll('.cell:not(.empty):not(.off):not(.future):not(.before)').forEach(cell=>{
       cell.onclick=()=>{ const kk=key(new Date(y,m,parseInt(cell.dataset.d))), cur=getCount(h.id,kk);
         setCount(h.id,kk,cur>0?0:1); render(); };
     });
@@ -822,6 +826,12 @@ async function doAuth(){
   // sinon : onAuthStateChange prend le relais (afterLogin)
 }
 async function signOut(){ await sb.auth.signOut(); }
+async function resetPassword(){
+  const email=document.getElementById('authEmail').value.trim(); const msg=document.getElementById('authMsg');
+  if(!email){ msg.className='auth-msg'; msg.textContent='Entre ton e-mail, puis reclique sur « Mot de passe oublié ».'; return; }
+  const {error}=await sb.auth.resetPasswordForEmail(email);
+  msg.className='auth-msg ok'; msg.textContent = error ? error.message : 'E-mail de réinitialisation envoyé (regarde tes spams).';
+}
 
 /* ============================================================
    8. UTILITAIRES + INITIALISATION
@@ -882,7 +892,7 @@ function setMode(m){
   document.getElementById('habitsApp').classList.toggle('hide', m!=='habits');
   document.getElementById('sportApp').classList.toggle('hide', m!=='sport');
   const b=document.querySelector('.brand'); if(b) b.textContent = m==='sport'?'Sport':'Habitudes';
-  if(m==='sport'){ sportScreen='templates'; renderSport(); } else { clearInterval(sportChronoT); }
+  if(m==='sport'){ sportScreen='templates'; renderSport(); } else { clearInterval(sportChronoT); const tabs=document.querySelector('.apptabs'); if(tabs) tabs.style.display=''; }
 }
 
 // 9.2 Chargement depuis Supabase
@@ -909,7 +919,6 @@ function objLabelSport(e){ if(e.type==='timed') return (e.duree_sec||0)+' s'+(e.
 function viewSportTemplates(){
   let cards = sportTemplates.map(t=>`
     <div class="tpl">
-      <span class="tpl-em" onclick="startSportSession('${t.id}')">${t.emoji||'🏋️'}</span>
       <div class="tpl-b" onclick="startSportSession('${t.id}')"><div class="tpl-n">${t.jour?esc(t.jour)+' — ':''}${esc(t.name)}</div><div class="tpl-m">${t.exercices.length} exercices</div></div>
       <button class="tpl-del" onclick="deleteTemplate('${t.id}','${esc(t.name)}')">🗑</button>
     </div>`).join('');
@@ -940,22 +949,21 @@ function viewSportSession(){
   const cards=s.exercices.map((e,i)=>{
     const lw=lastWeightSport(e.name);
     return `<div class="ex ${e.done?'done':''}">
-      <div class="ex-top"><span class="ex-name">${e.emoji||''} ${esc(e.name)}</span>${e.tag?`<span class="tag">${esc(e.tag)}</span>`:''}
+      <div class="ex-top"><span class="ex-name">${esc(e.name)}</span>${e.tag?`<span class="tag">${esc(e.tag)}</span>`:''}
         <button class="info" onclick="sportNotesOpen[${i}]=!sportNotesOpen[${i}];renderSport()">ⓘ</button></div>
       <div class="presc"><b>${e.sets} séries</b> · objectif <b>${esc(e.obj)}</b> · repos ${e.rest}s${lw?` · <b>dernière fois : ${esc(lw)} kg</b>`:''}</div>
       ${sportNotesOpen[i]?`<div class="spnotes">Muscles : ${esc(e.muscles||'')}${e.charge?('\nCharge départ : '+esc(e.charge)):''}${e.notes?('\n'+esc(e.notes)):''}</div>`:''}
-      <div class="entry">
-        <div class="field"><label>Séries</label><div class="ro">${e.sets||'—'}</div></div>
+      <div class="entry2">
         <div class="field"><label>Poids (kg)</label><input inputmode="decimal" value="${esc(String(e.poids))}" placeholder="—" oninput="sportSession.exercices[${i}].poids=this.value">${e.src?`<div class="src">${e.src}</div>`:''}</div>
         <div class="chk ${e.done?'on':''}" onclick="toggleSportDone(${i})">${e.done?'✓':''}</div>
       </div></div>`;
   }).join('');
   const doneN=s.exercices.filter(e=>e.done).length;
   return `<button class="back" onclick="quitSportSession()">‹ Annuler la séance</button>
-    <div class="shead"><div><h1>${s.emoji||''} ${esc(s.templateName)}</h1><div class="sub">${doneN}/${s.exercices.length} exercices faits</div></div>
+    <div class="shead"><div><h1>${esc(s.templateName)}</h1><div class="sub">${doneN}/${s.exercices.length} exercices faits</div></div>
       <div class="chrono"><div class="t" id="sportChrono">00:00</div><div class="l">durée</div></div></div>
     ${cards}<button class="finish" onclick="finishSportSession()">Terminer la séance</button>
-    <div class="rest" onclick="toggleSportRest()"><span class="lbl">Repos</span><span class="cd" id="sportRest">1:30</span><span class="lbl" id="sportRa">appuyer pour lancer</span></div>`;
+    <button class="restbtn" id="restBtn" onclick="toggleSportRest()"><span id="sportRest">1:30</span></button>`;
 }
 function toggleSportDone(i){ sportSession.exercices[i].done=!sportSession.exercices[i].done; renderSport(); }
 function quitSportSession(){
@@ -979,7 +987,7 @@ function tickSportChrono(){ if(!sportSession) return; const el=document.getEleme
 function viewSportHistory(){
   if(!sportHistory.length) return `<button class="back" onclick="sportScreen='templates';renderSport()">‹ Retour</button><div class="sp-empty">Aucune séance enregistrée.<br>Termine une séance pour la voir ici.</div>`;
   const items=sportHistory.map(h=>{ const d=new Date(h.date); const doneN=(h.exercices||[]).filter(e=>e.done).length;
-    return `<div class="hist" onclick="sportDetail='${h.id}';sportScreen='detail';renderSport()"><span style="font-size:22px">${h.emoji||'🏋️'}</span>
+    return `<div class="hist" onclick="sportDetail='${h.id}';sportScreen='detail';renderSport()">
       <div class="hist-b"><div class="hist-n">${esc(h.templateName||'Séance')}</div>
         <div class="hist-d">${d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})} · ${doneN}/${(h.exercices||[]).length} faits · ${Math.round((h.duration||0)/60)} min</div></div>
       <span class="tpl-arr">›</span></div>`; }).join('');
@@ -990,7 +998,7 @@ function viewSportDetail(){
   const rows=(h.exercices||[]).map(e=>`<div class="ex"><div class="ex-top"><span class="ex-name">${esc(e.name)}</span>${e.done?'<span class="tag">fait</span>':''}</div>
     <div class="presc"><b>${e.sets||'—'} séries</b> · objectif ${esc(e.obj||'')} · <b>${e.poids?esc(e.poids)+' kg':'—'}</b></div></div>`).join('');
   const d=new Date(h.date);
-  return `<button class="back" onclick="sportScreen='history';renderSport()">‹ Historique</button><h1>${h.emoji||''} ${esc(h.templateName||'')}</h1>
+  return `<button class="back" onclick="sportScreen='history';renderSport()">‹ Historique</button><h1>${esc(h.templateName||'')}</h1>
     <p class="sub">${d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</p>${rows}`;
 }
 
@@ -1045,10 +1053,9 @@ async function onXlsx(ev){
 }
 
 // 9.9 Minuteur de repos
-function toggleSportRest(){ if(sportRestT){ clearInterval(sportRestT); sportRestT=null; sportRestLeft=90; paintSportRest(); setSportRa('appuyer pour lancer'); return; }
-  setSportRa('appuyer pour arrêter'); sportRestT=setInterval(()=>{ sportRestLeft--; if(sportRestLeft<=0){ clearInterval(sportRestT); sportRestT=null; sportRestLeft=90; } paintSportRest(); },1000); }
-function paintSportRest(){ const el=document.getElementById('sportRest'); if(el) el.textContent=Math.floor(sportRestLeft/60)+':'+String(sportRestLeft%60).padStart(2,'0'); }
-function setSportRa(t){ const el=document.getElementById('sportRa'); if(el) el.textContent=t; }
+function toggleSportRest(){ if(sportRestT){ clearInterval(sportRestT); sportRestT=null; sportRestLeft=90; paintSportRest(); return; }
+  sportRestT=setInterval(()=>{ sportRestLeft--; if(sportRestLeft<=0){ clearInterval(sportRestT); sportRestT=null; sportRestLeft=90; } paintSportRest(); },1000); paintSportRest(); }
+function paintSportRest(){ const el=document.getElementById('sportRest'); if(el) el.textContent=Math.floor(sportRestLeft/60)+':'+String(sportRestLeft%60).padStart(2,'0'); const b=document.getElementById('restBtn'); if(b) b.classList.toggle('run',!!sportRestT); }
 
 // 9.10 Rendu Sport
 function renderSport(){
@@ -1057,6 +1064,8 @@ function renderSport(){
   else if(sportScreen==='session') a.innerHTML=viewSportSession();
   else if(sportScreen==='history') a.innerHTML=viewSportHistory();
   else if(sportScreen==='detail') a.innerHTML=viewSportDetail();
+  const tabs=document.querySelector('.apptabs'); if(tabs) tabs.style.display=(sportScreen==='session')?'none':'';
+  if(sportScreen==='session'){ tickSportChrono(); paintSportRest(); }
 }
 
 init();
